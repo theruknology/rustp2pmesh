@@ -60,6 +60,23 @@ fn describe_decision (d: &RoutingDecision) {
 
 }
 
+// Closure and Iterators
+// It takes a slice of (address, ping_ms) pairs and returns only the peers with ping under 50ms, sorted by ping ascending, formatted as "192.168.1.1 (32ms)"
+
+fn fast_peers(peers : &[(String, u32)]) -> Vec<String> {
+    let mut results: Vec<(u32, &String)> = peers
+        .iter()
+        .filter(|p| p.1 < 50)
+        .map(|p| (p.1, &p.0))
+        .collect();
+
+    results.sort_by(|a, b| a.0.cmp(&b.0));
+    results
+        .iter()
+        .map(|(ping, addr)| format!("{} ({})ms", addr, ping))
+        .collect()
+}
+
 fn main() {
 
     let packet = NetworkPacket { sender_id: [1u8; 32], payload: vec![10, 20, 30] };
@@ -78,5 +95,19 @@ fn main() {
     match connect_to_peer("hehe") {
         Ok(msg) => println!("{}", msg),
         Err(e) => println!("{}", e),
+    }
+
+    let peers = vec![
+        (String::from("192.168.1.1"), 32u32),
+        (String::from("192.168.1.2"), 80u32),
+        (String::from("192.168.1.3"), 15u32),
+        (String::from("192.168.1.4"), 120u32),
+        (String::from("192.168.1.5"), 44u32),
+    ];
+
+    let results = fast_peers(&peers);
+
+    for p in &results {
+        println!("{}", p);
     }
 }
